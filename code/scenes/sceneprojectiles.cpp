@@ -107,7 +107,8 @@ Integrator* createIntegrator(int type) {
     switch(type) {
         case 0: return new IntegratorEuler();
         case 1: return new IntegratorSymplecticEuler();
-        case 2: return new IntegratorVerlet();
+        case 2: return new IntegratorMidpoint();
+        case 3: return new IntegratorRK2();
         default: return nullptr;
     }
 }

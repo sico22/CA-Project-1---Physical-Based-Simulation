@@ -144,7 +144,28 @@
     </widget>
    </item>
    <item row="5" column="1">
-    <widget class="QComboBox" name="solver2"/>
+    <widget class="QComboBox" name="solver2">
+     <item>
+      <property name="text">
+       <string>Euler</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Symplectic Euler</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Midpoint</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>RK2</string>
+      </property>
+     </item>
+    </widget>
    </item>
   </layout>
  </widget>
