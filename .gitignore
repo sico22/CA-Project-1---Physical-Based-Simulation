@@ -1,0 +1,100 @@
+# ---- OS files ----
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---- Build artifacts ----
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+*.app
+*.pdb
+
+# ---- Compiled libraries ----
+*.lo
+*.la
+*.al
+*.mod
+*.cmake
+
+# ---- Build directories ----
+/build/
+/bin/
+/lib/
+/dist/
+/Debug/
+/Release/
+/CMakeFiles/
+/out/
+
+# ---- IDE and editor configs ----
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# CLion / JetBrains
+.idea/
+cmake-build-*/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# ---- Logs and temp files ----
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# ---- Generated / runtime data ----
+*.dat
+*.csv
+*.json
+*.txt
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+*.tiff
+
+# ---- Project-specific ----
+# Add any simulation outputs or cache folders here
+/results/
+/output/
+/cache/
+*.bin
+*.npy
+*.zip
+
+# ---- CMake ----
+CMakeCache.txt
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+# ---- Misc ----
+*.old
+*.orig
+*.rej
+
