@@ -3,6 +3,7 @@
 
 #include "defines.h"
 #include "particle.h"
+#include "particlesystem.h"
 
 
 struct Collision {
@@ -96,6 +97,30 @@ protected:
     Vec3 bmax;
     Vec3 center;
     Vec3 size;
+};
+
+struct GridId {
+    int x, y, z;
+    bool operator==(const GridId& other) const { return x==other.x && y==other.y && z==other.z; }
+};
+struct GridIdHasher {
+    std::size_t operator()(const GridId& k) const {
+        return ((k.x*92837111) ^ (k.y*689287499) ^ (k.z*283923481));
+    }
+};
+
+class ColliderParticle : public Collider {
+public:
+    ColliderParticle(double cellSize = 2.0) : cellSize(cellSize) {}
+    void resolveAllCollisions(ParticleSystem& system, double kElastic = 0.5);
+    bool isInside(const Particle* p) const override { return false; }
+    bool testCollision(const Particle* p, Collision& colInfo) const override { return false; }
+
+private:
+    double cellSize;
+    std::unordered_map<GridId, std::vector<Particle*>, GridIdHasher> grid;
+    GridId getGridId(const Vec3& pos) const;
+    void resolveParticleCollision(Particle* p1, Particle* p2, double kElastic);
 };
 
 

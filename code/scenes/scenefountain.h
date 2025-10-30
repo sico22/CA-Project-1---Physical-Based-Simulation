@@ -62,6 +62,8 @@ protected:
 
     Vec3 fountainPos;
     int mouseX, mouseY;
+
+    ColliderParticle colliderParticles;
 };
 
 #endif // SCENEFOUNTAIN_H

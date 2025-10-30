@@ -58,6 +58,7 @@ void SceneFountain::initialize() {
     colliderSphere.setCenter(Vec3(0,0,0));
     colliderSphere.setRadius(20);
     colliderBox.setFromBounds(Vec3(30,0,20), Vec3(50,10,60));
+
 }
 
 
@@ -227,7 +228,15 @@ void SceneFountain::update(double dt) {
         if (colliderRamp.testCollision(p, colInfo)) {
             colliderRamp.resolveCollision(p, colInfo, kBounce, kFriction);
         }
+        if (colliderSphere.testCollision(p, colInfo)) {
+            colliderSphere.resolveCollision(p, colInfo, kBounce, kFriction);
+        }
+        if (colliderBox.testCollision(p, colInfo)) {
+            colliderBox.resolveCollision(p, colInfo, kBounce, kFriction);
+        }
     }
+
+    colliderParticles.resolveAllCollisions(system, kBounce);
 
     // check dead particles
     for (Particle* p : system.getParticles()) {
