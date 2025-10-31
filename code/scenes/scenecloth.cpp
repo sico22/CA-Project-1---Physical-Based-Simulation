@@ -74,10 +74,18 @@ void SceneCloth::initialize() {
     system.addForce(fGravity);
 
     // TODO: in my solution setup, these were the colliders
-    //colliderBall.setCenter(Vec3(40,-20,0));
-    //colliderBall.setRadius(30);
-    //colliderCube.setFromCenterSize(Vec3(-60,30,0), Vec3(60, 40, 60));
-    //colliderWalls.setFromCenterSize(Vec3(0, 0, 0), Vec3(200, 200, 200));
+    // Ball
+    colliderBall.setCenter(Vec3(30, 30, 0));
+    colliderBall.setRadius(40);
+
+    // Walls
+    wallFloor.setPlane(Vec3(0, 1, 0),200);
+    wallCeil.setPlane(Vec3(0, -1, 0), 200);
+    wallLeft.setPlane(Vec3(1, 0, 0), 200);
+    wallRight.setPlane(Vec3(-1, 0, 0), 200);
+    wallFront.setPlane(Vec3(0, 0, -1), 200);
+    wallBack.setPlane(Vec3(0, 0, 1), 200);
+
 }
 
 void SceneCloth::reset()
@@ -120,9 +128,16 @@ void SceneCloth::reset()
 
             // TODO: you can play here with different start positions and/or fixed particles
             fixedParticle[idx] = false;
+
+            // Fix the two right ends
+            if (i == numParticlesX - 1 && (j == 0 || j == numParticlesY - 1)) {
+                fixedParticle[idx] = true;
+            }
+
             double tx = i*edgeX - 0.5*clothWidth;
             double ty = j*edgeY - 0.5*clothHeight;
-            Vec3 pos = Vec3(ty+edgeY, 70 - tx - edgeX, 0);
+            //Vec3 pos = Vec3(ty+edgeY, 70 - tx - edgeX, 0);
+            Vec3 pos = Vec3(tx, 70, ty);
 
             Particle* p = new Particle();
             p->id = idx;
@@ -179,10 +194,70 @@ void SceneCloth::updateSprings()
     // here I update all ks and kd parameters.
     // idea: if you want to enable/disable a spring type, you can set ks to 0 for these
     for (ForceSpring* f : springsStretch) {
+        f->setSpringConstant(ks);
+        f->setDampingCoeff(kd);
     }
     for (ForceSpring* f : springsShear) {
+        f->setSpringConstant(ks);
+        f->setDampingCoeff(kd);
     }
     for (ForceSpring* f : springsBend) {
+        f->setSpringConstant(ks);
+        f->setDampingCoeff(kd);
+    }
+
+    for (int i = 0; i < numParticlesX ; i++) {
+        for (int j = 0; j < numParticlesY; j++) {
+            Particle* p1 = system.getParticle(i * numParticlesY + j);
+
+            // Stretch
+            if (i + 1 < numParticlesX) {
+                Particle* p2 = system.getParticle((i + 1) * numParticlesY + j);
+                double l = (p1->pos - p2->pos).norm();
+                ForceSpring* f = new ForceSpring(p1, p2, l, ks, kd);
+                springsStretch.push_back(f);
+                system.addForce(f);
+            }
+            if (j + 1 < numParticlesY) {
+                Particle* p2 = system.getParticle(i * numParticlesY + j + 1);
+                double l = (p1->pos - p2->pos).norm();
+                ForceSpring* f = new ForceSpring(p1, p2, l, ks, kd);
+                springsStretch.push_back(f);
+                system.addForce(f);
+            }
+
+            // Shear
+            if (i + 1 < numParticlesX && j + 1 < numParticlesY) {
+                Particle* p2 = system.getParticle((i + 1) * numParticlesY + j + 1);
+                double l = (p1->pos - p2->pos).norm();
+                ForceSpring* f = new ForceSpring(p1, p2, l, ks, kd);
+                springsShear.push_back(f);
+                system.addForce(f);
+            }
+            if (i + 1 < numParticlesX && j - 1 >= 0) {
+                Particle* p2 = system.getParticle((i + 1) * numParticlesY + j - 1);
+                double l = (p1->pos - p2->pos).norm();
+                ForceSpring* f = new ForceSpring(p1, p2, l, ks, kd);
+                springsShear.push_back(f);
+                system.addForce(f);
+            }
+
+            // Bend
+            if (i + 2 < numParticlesX) {
+                Particle* p2 = system.getParticle((i + 2) * numParticlesY + j);
+                double l = (p1->pos - p2->pos).norm();
+                ForceSpring* f = new ForceSpring(p1, p2, l, ks, kd);
+                springsBend.push_back(f);
+                system.addForce(f);
+            }
+            if (j + 2 < numParticlesY) {
+                Particle* p2 = system.getParticle(i * numParticlesY + j + 2);
+                double l = (p1->pos - p2->pos).norm();
+                ForceSpring* f = new ForceSpring(p1, p2, l, ks, kd);
+                springsBend.push_back(f);
+                system.addForce(f);
+            }
+        }
     }
 }
 
@@ -232,6 +307,7 @@ void SceneCloth::paint(const Camera& camera)
     shaderPhong->setUniformValueArray("lightColor", lightColor, numLights);
 
     // draw the particle spheres
+
     QMatrix4x4 modelMat;
     if (showParticles) {
         vaoSphereS->bind();
@@ -254,9 +330,32 @@ void SceneCloth::paint(const Camera& camera)
     }
 
     // TODO: draw colliders and walls
+    // Walls
+    vaoCube->bind();
+    shaderPhong->setUniformValue("normalSign", -1.0f);   // flip normals for interior walls
+    shaderPhong->setUniformValue("matdiff", 0.6f, 0.75f, 0.9f); // light blue
+    shaderPhong->setUniformValue("matspec", 0.05f, 0.05f, 0.05f);
+    shaderPhong->setUniformValue("matshin", 10.0f);
+    QMatrix4x4 modelMatWalls;
+    modelMatWalls.scale(200.0f);
+    shaderPhong->setUniformValue("ModelMatrix", modelMatWalls);
+    glFuncs->glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    shaderPhong->setUniformValue("normalSign", 1.0f); // restore for other objects
+
+
+    // Ball
+    vaoSphereL->bind();
+    QMatrix4x4 modelMatBall;
+    Vec3 cBall = colliderBall.getCenter();
+    modelMatBall.translate(cBall.x(), cBall.y(), cBall.z());
+    modelMatBall.scale(colliderBall.getRadius());
+    shaderPhong->setUniformValue("ModelMatrix", modelMatBall);
+    shaderPhong->setUniformValue("matdiff", 0.3f, 0.3f, 0.9f);
+    shaderPhong->setUniformValue("matspec", 0.5f, 0.5f, 1.0f);
+    shaderPhong->setUniformValue("matshin", 80.f);
+    glFuncs->glDrawElements(GL_TRIANGLES, 3 * numFacesSphereL, GL_UNSIGNED_INT, 0);
 
     shaderPhong->release();
-
 
     // update cloth mesh VBO coords
     vboMesh->bind();
@@ -267,7 +366,7 @@ void SceneCloth::paint(const Camera& camera)
         pos[3*i+2] = system.getParticle(i)->pos.z();
     }
     void* bufptr = vboMesh->mapRange(0, 3*numParticles*sizeof(float),
-                       QOpenGLBuffer::RangeInvalidateBuffer | QOpenGLBuffer::RangeWrite);
+                                     QOpenGLBuffer::RangeInvalidateBuffer | QOpenGLBuffer::RangeWrite);
     memcpy(bufptr, (void*)(pos), 3*numParticles*sizeof(float));
     vboMesh->unmap();
     vboMesh->release();
@@ -310,22 +409,76 @@ void SceneCloth::update(double dt)
     // integration step
     Vecd ppos = system.getPositions();
     integrator.step(system, dt);
-    system.setPreviousPositions(ppos);
 
-    // user interaction
-    if (selectedParticle >= 0) {
+    if (draggingParticle && selectedParticle >= 0) {
         Particle* p = system.getParticle(selectedParticle);
-        // p->pos = ?; TODO: assign cursor world position (see code, it's already computed)
-        p->vel = Vec3(0,0,0);
-
-        // TODO: test and resolve for collisions during user movement
+        p->pos = cursorWorldPos;
+        p->prevPos = cursorWorldPos;
+        p->vel = Vec3(0, 0, 0);
+        p->force = Vec3(0, 0, 0);
     }
 
-    // TODO: relaxation
+    system.setPreviousPositions(ppos);
+
+
+    // user interaction
+    if (draggingParticle && selectedParticle >= 0) {
+        Particle* p = system.getParticle(selectedParticle);
+        p->pos = cursorWorldPos;
+        p->prevPos = cursorWorldPos;
+        p->vel = Vec3(0, 0, 0);
+        p->force = Vec3(0, 0, 0);
+    }
+
+
+    // TODO: relaxation 
+    for (int i = 0; i < 20; i++) {
+        for (ForceSpring* f : springsStretch) {
+            Particle* p1 = f->getParticle1();
+            Particle* p2 = f->getParticle2();
+
+            double d = (p2->pos - p1->pos).norm();
+            if (d == 0.0)
+                continue;
+
+            double diff = (d - f->getRestLength()) / d;
+            Vec3 correction = 0.5 * diff * (p2->pos - p1->pos);
+
+            if (!fixedParticle[p1->id] && (!draggingParticle || p1->id != selectedParticle))
+                p1->pos += correction;
+            if (!fixedParticle[p2->id] && (!draggingParticle || p2->id != selectedParticle))
+                p2->pos -= correction;
+
+        }
+    }
 
     // collisions
+    Collision colInfo;
     for (Particle* p : system.getParticles()) {
-        // TODO: test and resolve collisions
+        if (draggingParticle && selectedParticle == p->id)
+            continue;
+
+        if (colliderBall.testCollision(p, colInfo)) {
+            colliderBall.resolveCollision(p, colInfo, 0.2, 0.3);
+        }
+        if (wallFloor.testCollision(p, colInfo)) {
+            wallFloor.resolveCollision(p, colInfo, 0.4, 0.3);
+        }
+        if (wallCeil.testCollision(p, colInfo)) {
+            wallCeil.resolveCollision(p, colInfo, 0.4, 0.3);
+        }
+        if (wallLeft.testCollision(p, colInfo)) {
+            wallLeft.resolveCollision(p, colInfo, 0.4, 0.3);
+        }
+        if (wallRight.testCollision(p, colInfo)) {
+            wallRight.resolveCollision(p, colInfo, 0.4, 0.3);
+        }
+        if (wallFront.testCollision(p, colInfo)) {
+            wallFront.resolveCollision(p, colInfo, 0.4, 0.3);
+        }
+        if (wallBack.testCollision(p, colInfo)) {
+            wallBack.resolveCollision(p, colInfo, 0.4, 0.3);
+        }
     }
 
     // needed after we have done collisions and relaxation, since spring forces depend on p and v
@@ -344,12 +497,25 @@ void SceneCloth::mousePressed(const QMouseEvent* e, const Camera& cam)
         Vec3 origin = cam.getPos();
 
         selectedParticle = -1;
+        double minDist = 1e9;
         for (int i = 0; i < numParticles; i++) {
-            // TODO: point-ray dist to check if we select one particle
+            Particle* p = system.getParticle(i);
+
+            Vec3 op = p->pos - origin;
+            double t = op.dot(rayDir);
+            if (t < 0) continue;
+            Vec3 closest = origin + t * rayDir;
+            double dist = (p->pos - closest).norm();
+
+            if (dist < p->radius * 2.0 && dist < minDist) {
+                minDist = dist;
+                selectedParticle = i;
+            }
         }
 
         if (selectedParticle >= 0) {
             cursorWorldPos = system.getParticle(selectedParticle)->pos;
+            draggingParticle = true;
         }
     }
 }
@@ -379,6 +545,7 @@ void SceneCloth::mouseMoved(const QMouseEvent* e, const Camera& cam)
 void SceneCloth::mouseReleased(const QMouseEvent*, const Camera&)
 {
     selectedParticle = -1;
+    draggingParticle = false;
 }
 
 void SceneCloth::keyPressed(const QKeyEvent* e, const Camera&)
