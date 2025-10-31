@@ -271,3 +271,60 @@ Model Model::createCone(int sides, double height)
 
     return Model(verts, norms, tris);
 }
+
+Model Model::createOpenCube(bool innerNormals) {
+    const std::vector<float> cubeVerts = {
+        -1,-1,-1,
+        -1,-1, 1,
+        -1, 1,-1,
+        -1, 1, 1,
+        1,-1,-1,
+        1,-1, 1,
+        1, 1,-1,
+        1, 1, 1
+    };
+
+    // Faces: bottom (y = -1), front (z = 1), back (z = -1), left (x = -1), right (x = 1)
+    const std::vector<unsigned int> faces = {
+        // bottom
+        0,4,5,   0,5,1,
+        // front
+        1,5,7,   1,7,3,
+        // back
+        4,0,2,   4,2,6,
+        // left
+        0,1,3,   0,3,2,
+        // right
+        5,4,6,   5,6,7
+        // top omitted
+    };
+
+    const std::vector<float> faceNormals = {
+        0,-1, 0,  // bottom
+        0, 0, 1,  // front
+        0, 0,-1,  // back
+        -1, 0, 0,  // left
+        1, 0, 0   // right
+    };
+
+    std::vector<float> verts(faces.size() * 3);
+    std::vector<float> norms(faces.size() * 3);
+    std::vector<unsigned int> indices(faces.size());
+
+    for (unsigned int i = 0; i < faces.size(); ++i) {
+        unsigned int v = faces[i];
+        unsigned int f = i / 6;
+
+        verts[3*i + 0] = cubeVerts[3*v + 0];
+        verts[3*i + 1] = cubeVerts[3*v + 1];
+        verts[3*i + 2] = cubeVerts[3*v + 2];
+
+        norms[3*i + 0] = faceNormals[3*f + 0] * (innerNormals ? -1 : 1);
+        norms[3*i + 1] = faceNormals[3*f + 1] * (innerNormals ? -1 : 1);
+        norms[3*i + 2] = faceNormals[3*f + 2] * (innerNormals ? -1 : 1);
+
+        indices[i] = i;
+    }
+
+    return Model(verts, norms, indices);
+}

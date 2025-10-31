@@ -55,6 +55,9 @@ public:
     // radius 1 cone with axis aligned with Y, base at (0,0,0) and apex at (0,height,0)
     static Model createCone(int sides = 8, double height = 1);
 
+    static Model createOpenCube(bool innerNormals = false);
+
+
 };
 
 

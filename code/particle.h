@@ -18,12 +18,17 @@ public:
     Vec3 color    = Vec3(1, 1, 1);
     unsigned int id = 0;
 
+    double density;
+    double pressure;
+
     Particle() {
         pos	    = Vec3(0.0, 0.0, 0.0);
         vel	    = Vec3(0.0, 0.0, 0.0);
         force   = Vec3(0.0, 0.0, 0.0);
         prevPos = pos;
         mass    = 1.0;
+        density = 0.0;
+        pressure = 0.0;
     }
 
     Particle(const Vec3& p, const Vec3& v, float m) {
@@ -32,6 +37,8 @@ public:
         force	= Vec3(0.0, 0.0, 0.0);
         prevPos = pos;
         mass	= m;
+        density = 0.0;
+        pressure = 0.0;
     }
 
     Particle(const Particle& p) {
@@ -44,6 +51,8 @@ public:
         color   = p.color;
         radius  = p.radius;
         life    = p.life;
+        density = 0.0;
+        pressure = 0.0;
     }
 
     ~Particle() {

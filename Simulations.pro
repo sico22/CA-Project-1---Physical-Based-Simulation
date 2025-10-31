@@ -23,6 +23,7 @@ SOURCES += \
     code/model.cpp \
     code/particlesystem.cpp \
     code/scenes/scenecloth.cpp \
+    code/scenes/scenefluid.cpp \
     code/scenes/scenefountain.cpp \
     code/scenes/sceneprojectiles.cpp \
     code/scenes/scenerope.cpp \
@@ -36,6 +37,7 @@ SOURCES += \
     code/widgets/widgettestcolliders.cpp \
     code/widgets/widgettestintegrators.cpp \
     code/widgets/widgetnbody.cpp \
+    code/widgets/widgetfluid.cpp \
 
 HEADERS += \
     code/camera.h \
@@ -51,6 +53,7 @@ HEADERS += \
     code/particlesystem.h \
     code/scene.h \
     code/scenes/scenecloth.h \
+    code/scenes/scenefluid.h \
     code/scenes/scenefountain.h \
     code/scenes/sceneprojectiles.h \
     code/scenes/scenerope.h \
@@ -64,10 +67,12 @@ HEADERS += \
     code/widgets/widgettestcolliders.h \
     code/widgets/widgettestintegrators.h \
     code/widgets/widgetnbody.h \
+    code/widgets/widgetfluid.h \
 
 FORMS += \
     forms/mainwindow.ui \
     forms/widgetcloth.ui \
+    forms/widgetfluid.ui \
     forms/widgetfountain.ui \
     forms/widgetprojectiles.ui \
     forms/widgetrope.ui \

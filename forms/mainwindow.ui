@@ -151,6 +151,7 @@
     <addaction name="actionSceneTestIntegrators"/>
     <addaction name="actionSceneTestColliders"/>
     <addaction name="actionSceneNBody"/>
+    <addaction name="actionSceneFluid"/>
    </widget>
    <widget class="QMenu" name="menuCamera">
     <property name="title">
@@ -218,6 +219,11 @@
   <action name="actionSceneNBody">
    <property name="text">
     <string>NBody</string>
+   </property>
+  </action>
+  <action name="actionSceneFluid">
+   <property name="text">
+    <string>Fluid</string>
    </property>
   </action>
  </widget>
